@@ -12,6 +12,9 @@
     <!-- Imu topic to subscribe to -->
     <param name="imu_topic" value="/imu0" type="str" />
 
+    <!-- Global position topic to subscribe to -->
+    <param name="gp_topic" value="/gp_data" type="str" />
+
     <!-- Camera calibration file -->
     <param name="calib_file" value="$(arg calib_file)" />
 
@@ -19,8 +22,8 @@
     <param name="gp_settings_file" value="$(arg gp_settings_file)" />
 
     <!--Parameters-->
-    <rosparam file="$(find svo_ros)/param/vio_mono.yaml" />
-    <param name="use_global_measurements" value="false" />
+    <rosparam file="$(find svo_ros)/param/vio_mono_gps.yaml" />
+    <param name="use_global_measurements" value="true" />
     
   </node>
 

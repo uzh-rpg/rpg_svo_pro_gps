@@ -413,6 +413,8 @@ public:
   ImuHandlerPtr imu_handler_;
   GlobalPositionsHandlerPtr globalpositions_handler_;
 
+  bool use_global_measurements_ = false;
+
 #ifdef SVO_LOOP_CLOSING
   LoopClosingPtr lc_;
   size_t loop_closing_counter_ = 0;

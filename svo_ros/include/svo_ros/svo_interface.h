@@ -106,6 +106,8 @@ public:
   void stereoLoop();
   void globalpositionsLoop();
 
+  // Pipeline uses global positions.
+  bool use_global_measurements_ = false;
   // Pipeline initialized with initial global position.
   bool gp_initialized_ = false;
 };

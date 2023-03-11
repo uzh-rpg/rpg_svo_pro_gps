@@ -23,15 +23,19 @@ SvoNodeBase::SvoNodeBase()
         svo::PipelineType::kStereo : svo::PipelineType::kMono),
         svo_interface_(type_, node_handle_, private_node_handle_)
 {
-  svo_interface_.subscribeGlobalPositions();
 
   if (svo_interface_.imu_handler_)
   {
+    svo_interface_.subscribeGlobalPositions();
     svo_interface_.subscribeImu();
   }
+  else
+  {
+    LOG(FATAL) << "This version of SVO needs IMU!";
+  }
 
-  // be sure RTS can provide initial pose.
-  while (!svo_interface_.gp_initialized_)
+  // be sure that the initial pose is provided by the global measurements
+  while (svo_interface_.use_global_measurements_ && !svo_interface_.gp_initialized_)
   {
     std::chrono::milliseconds dura(100);
     std::this_thread::sleep_for(dura);

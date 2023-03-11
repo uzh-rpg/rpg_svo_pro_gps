@@ -1618,7 +1618,6 @@ bool Estimator::initPoseFromFrameBundle(const FrameBundleConstPtr &frame_bundle,
                                         const Eigen::Vector3d& b_t_pb,
                                         Transformation &T_WS)
 {
-  // This is the case for real-world Total Station applications.
   if(!initial_orientation_known)
   {
     const int n_measurements = imu_measurements.size();
@@ -1654,7 +1653,6 @@ bool Estimator::initPoseFromFrameBundle(const FrameBundleConstPtr &frame_bundle,
 
     T_WS = Transformation(t, T.getEigenQuaternion());
   }
-  // This is the case for Optitrack experiments.
   else
   {
     T_WS = frame_bundle->get_T_W_B();

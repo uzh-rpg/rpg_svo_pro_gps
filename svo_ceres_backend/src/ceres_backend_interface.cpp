@@ -97,7 +97,7 @@ void CeresBackendInterface::loadMapFromBundleAdjustment(
   }
 
   // Adding new state to backend ---------------------------------------------
-  if (addStatesAndInertialMeasurementsToBackend(new_frames))
+  if (addStatesInertialAndGpMeasurementsToBackend(new_frames))
   {
     last_added_nframe_imu_ = new_frames->getBundleId();
 
@@ -535,7 +535,7 @@ bool CeresBackendInterface::addStatesInertialAndGpMeasurementsToBackend(
     return false;
   }
 
-  // Get required Rts measurement ----------------------------------------
+  // Get global position measurement ----------------------------------------
   GpMeasurement gp_measurement;
   /// @todo Delay imu-cam has not been tested.
   double current_frame_bundle_stamp_adjusted =
@@ -546,7 +546,7 @@ bool CeresBackendInterface::addStatesInertialAndGpMeasurementsToBackend(
                                             gp_measurement,
                                             true))
   {
-    VLOG(10) << "no rts measurement loaded to backend!";
+    VLOG(10) << "no global position measurement loaded to backend!";
   }
 
   // introduce a state for the frame in the backend --------------------------
@@ -562,7 +562,7 @@ bool CeresBackendInterface::addStatesInertialAndGpMeasurementsToBackend(
 
   if (gp_measurement.timestamp_ > 0.0)
   {
-    VLOG(10) << "Backend: Added rts measurement.";
+    VLOG(10) << "Backend: Added global position measurement.";
 
     if ((g_permon_gp_))
     {
@@ -818,7 +818,7 @@ void CeresBackendInterface::optimizationLoop()
       VLOG(1) << " - nRelativePoseError " << nRelativePoseError;
       VLOG(1) << " - nGpError " << nGpError;
 
-      VLOG(1) << "Num states connected to Rts residuals : "
+      VLOG(1) << "Num states connected to global position residuals : "
               << backend_.numFramesConnectedToGpResiduals();
       // End log Ceres Map ----------------------------------------------------------
 
@@ -905,7 +905,7 @@ void CeresBackendInterface::setImu(
   backend_.addImu(imu_parameters);
 }
 
-// Set the RTS and settings in backend
+// Set the global position settings in backend
 void CeresBackendInterface::setGpHandler(
   const std::shared_ptr<GlobalPositionsHandler> globalpositions_handler)
 {

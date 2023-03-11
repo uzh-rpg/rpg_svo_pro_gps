@@ -86,6 +86,13 @@ SvoInterface::SvoInterface(
   // Initialize class dealing with global positions.
   globalpositions_handler_ = factory::getGlobalPositionsHandler(pnh_);
   svo_->globalpositions_handler_ = globalpositions_handler_;
+  use_global_measurements_ = vk::param<bool>(pnh_, "use_global_measurements", false);
+  svo_->use_global_measurements_ = use_global_measurements_;
+
+  if (use_global_measurements_)
+  {
+    SVO_INFO_STREAM("Using Global Position Measurements");
+  }
 
   if(vk::param<bool>(pnh_, "use_ceres_backend", false))
   {
@@ -111,6 +118,8 @@ SvoInterface::SvoInterface(
 #endif
   if(vk::param<bool>(pnh_, "runlc", false))
   {
+    LOG(FATAL) << "Loop closure is not supported in this version of SVO!";
+
 #ifdef SVO_LOOP_CLOSING
     LoopClosingPtr loop_closing_ptr =
         factory::getLoopClosingModule(pnh_, svo_->getNCamera());
@@ -452,7 +461,7 @@ void SvoInterface::globalpositionsCallback(const geometry_msgs::PoseStampedConst
     }
   }
   else
-    SVO_ERROR_STREAM("SvoNode has no RtsHandler");
+    SVO_ERROR_STREAM("SvoNode has no Global Position Handler");
 }
 
 void SvoInterface::inputKeyCallback(const std_msgs::StringConstPtr& key_input)

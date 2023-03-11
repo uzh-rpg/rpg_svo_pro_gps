@@ -215,16 +215,20 @@ bool FrameHandlerBase::addFrameBundle(const FrameBundlePtr& frame_bundle)
     resetAll();
     R_imu_world_ = R_imu_world;
     have_rotation_prior_ = have_rotation_prior;
-    Transformation T_world_imuinit;
+  
     // Get initial pose wrt world.
-    if(!globalpositions_handler_->getInitialPose(T_world_imuinit))
+    if(use_global_measurements_)
     {
-      return false;
-    }
+      Transformation T_world_imuinit;
+      if (!globalpositions_handler_->getInitialPose(T_world_imuinit))
+      {
+        return false;
+      }
 
-    // Update imu initial pose.
-    setInitialImuPose(T_world_imuinit);
-    VLOG(40) << "Initial imu pose " << std::endl << T_world_imuinit_;
+      // Update imu initial pose.
+      setInitialImuPose(T_world_imuinit);
+      VLOG(40) << "Initial imu pose " << std::endl << T_world_imuinit_;      
+    }
 
     setInitialPose(frame_bundle);
     stage_ = Stage::kInitializing;

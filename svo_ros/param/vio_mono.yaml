@@ -157,7 +157,7 @@ ceres_recalculate_imu_terms_after_loop: true
 ##### Loop Closing parameters #####
 ##############################
 # Flag to enable/disable loop closing
-runlc: True
+runlc: False
 # Name of the file which stores the BOW vocabulary #
 voc_name: voc_GEN_8X4.yml.gz
 # Data Extraction Threshold #

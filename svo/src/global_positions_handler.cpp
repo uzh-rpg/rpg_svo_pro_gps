@@ -29,6 +29,8 @@ GlobalPositionsHandler::GlobalPositionsHandler(
     q_W_B_.y() = 0;
     q_W_B_.z() = 0;
   }
+
+  reset();
 }
 
 GlobalPositionsHandler::~GlobalPositionsHandler()
@@ -40,12 +42,22 @@ bool GlobalPositionsHandler::getMeasurementTillTime(
     GpMeasurement& extracted_measurement,
     const bool remove_measurements)
 {
+  
+  // debug
+  std::cout << "0\n";
+  // end
+
   ulock_t lock(measurements_mut_);
-  if(measurements_.empty())
+ 
+  if(measurements_.size() == 0)
   {
     VLOG(10) << "don't have any gp measurements!";
     return false;
   }
+
+  // debug
+  std::cout << "1\n";
+  // end
 
   // Find the first measurement older than timestamp,
   // note that the newest measurement is at the front of the list!
@@ -356,9 +368,9 @@ GlobalPositionsSettings GlobalPositionsHandler::loadSettingsFromFile(const std::
   GlobalPositionsSettings settings;
   if(data["gp_settings"].IsDefined())
   {
-    settings.cov(0,0) = data["gp_settings"]["horizontal_encoder_variance"].as<double>();
-    settings.cov(1,1) = data["gp_settings"]["vertical_encoder_variance"].as<double>();
-    settings.cov(2,2) = data["gp_settings"]["laser_variance"].as<double>();
+    settings.cov(0,0) = data["gp_settings"]["variance_x"].as<double>();
+    settings.cov(1,1) = data["gp_settings"]["variance_x"].as<double>();
+    settings.cov(2,2) = data["gp_settings"]["variance_x"].as<double>();
 
     settings.B_t_PB(0) = data["gp_settings"]["B_t_PB"][0].as<double>();
     settings.B_t_PB(1) = data["gp_settings"]["B_t_PB"][1].as<double>();
