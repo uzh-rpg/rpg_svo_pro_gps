@@ -322,7 +322,7 @@ bool FrameHandlerBase::addFrameBundle(const FrameBundlePtr& frame_bundle)
       else
       {
         map_->getKeyFrameAt(0)->is_stable_ = false;
-        SVO_WARN_STREAM("Backend scale not stable.");
+        // SVO_WARN_STREAM("Backend scale not stable.");
       }
     }
   }

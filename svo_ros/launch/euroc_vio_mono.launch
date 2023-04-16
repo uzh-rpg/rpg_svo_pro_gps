@@ -4,7 +4,7 @@
   <arg name="gp_settings_file" default="$(find svo_ros)/param/gp_settings.yaml"/>
 
   <!-- SVO node -->
-  <node pkg="svo_ros" type="svo_node" name="svo" clear_params="true" output="screen" args="--v=10" >
+  <node pkg="svo_ros" type="svo_node" name="svo" clear_params="true" output="screen" args="--v=2" >
 
     <!-- Camera topic to subscribe to -->
     <param name="cam0_topic" value="/cam0/image_raw" type="str" />

@@ -252,6 +252,9 @@ public:
 
   std::string getStationaryStatusStr() const;
 
+  // use gp measurements
+  bool use_global_measurements_ = false;
+
 protected:
   // modules
   Estimator backend_;

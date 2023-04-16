@@ -26,7 +26,6 @@ SvoNodeBase::SvoNodeBase()
 
   if (svo_interface_.imu_handler_)
   {
-    svo_interface_.subscribeGlobalPositions();
     svo_interface_.subscribeImu();
   }
   else
@@ -34,12 +33,31 @@ SvoNodeBase::SvoNodeBase()
     LOG(FATAL) << "This version of SVO needs IMU!";
   }
 
-  // be sure that the initial pose is provided by the global measurements
-  while (svo_interface_.use_global_measurements_ && !svo_interface_.gp_initialized_)
+  if (svo_interface_.use_global_measurements_)
   {
-    std::chrono::milliseconds dura(100);
-    std::this_thread::sleep_for(dura);
+    if (svo_interface_.globalpositions_handler_)
+    {
+      svo_interface_.subscribeGlobalPositions();
+    }
+    else
+    {
+      LOG(FATAL) << "Asked to use gp measurements but handler is not available!";
+    }
   }
+
+  // be sure that the initial pose is provided by the global measurements
+  if (svo_interface_.use_global_measurements_)
+  {
+    while (!svo_interface_.gp_initialized_)
+    {
+      std::chrono::milliseconds dura(100);
+      std::this_thread::sleep_for(dura);
+    }
+  }
+
+  // debug
+  std::cout << "svo_interface_.gp_initialized_ = " << svo_interface_.gp_initialized_ << "\n";
+  // end
 
   svo_interface_.subscribeImage();
   svo_interface_.subscribeRemoteKey();

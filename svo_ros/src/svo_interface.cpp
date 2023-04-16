@@ -106,6 +106,12 @@ SvoInterface::SvoInterface(
     {
       SVO_ERROR_STREAM("Cannot use ceres backend without using imu");
     }
+
+    if (use_global_measurements_)
+    {
+      ceres_backend_interface_->setGpHandler(globalpositions_handler_);
+      ceres_backend_interface_->use_global_measurements_ = true;
+    }
   }
 #ifdef SVO_USE_GTSAM_BACKEND
   if(vk::param<bool>(pnh_, "use_backend", false))

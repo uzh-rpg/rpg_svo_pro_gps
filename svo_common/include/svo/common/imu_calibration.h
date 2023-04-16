@@ -108,7 +108,6 @@ public:
   }
 };
 
-// TODO(cfo) Deprecate
 struct ImuMeasurement
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW

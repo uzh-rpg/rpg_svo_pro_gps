@@ -537,16 +537,19 @@ bool CeresBackendInterface::addStatesInertialAndGpMeasurementsToBackend(
 
   // Get global position measurement ----------------------------------------
   GpMeasurement gp_measurement;
+  gp_measurement.timestamp_ = -1.0;
+  gp_measurement.position_ = Eigen::Vector3d::Zero();
   /// @todo Delay imu-cam has not been tested.
   double current_frame_bundle_stamp_adjusted =
           current_frame_bundle_stamp - imu_handler_->imu_calib_.delay_imu_cam;
   double oldest_timestamp = imu_measurements.at(imu_measurements.size()-2).timestamp_;
-  if (!globalpositions_handler_->getMeasurementTillTime(current_frame_bundle_stamp_adjusted,
-                                            oldest_timestamp,
-                                            gp_measurement,
-                                            true))
+  if (use_global_measurements_)
   {
-    VLOG(10) << "no global position measurement loaded to backend!";
+    if (!globalpositions_handler_->getMeasurementTillTime(
+      current_frame_bundle_stamp_adjusted, oldest_timestamp, gp_measurement, true))
+      {
+        VLOG(10) << "no global position measurement loaded to backend!";
+      }
   }
 
   // introduce a state for the frame in the backend --------------------------

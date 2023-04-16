@@ -50,4 +50,4 @@ repositories:
   rpg_trajectory_evaluation:
     type: git
     url: git@github.com:uzh-rpg/rpg_trajectory_evaluation.git
-    version: dev
+    version: master

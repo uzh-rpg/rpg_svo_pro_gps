@@ -42,7 +42,7 @@ public:
 struct GpMeasurement
 {
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  double timestamp_ = 0.0; ///< In seconds.
+  double timestamp_; ///< In seconds.
   Eigen::Vector3d position_;
   GpMeasurement() {}
   GpMeasurement(

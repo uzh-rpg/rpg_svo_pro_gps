@@ -30,7 +30,7 @@ GlobalPositionsHandler::GlobalPositionsHandler(
     q_W_B_.z() = 0;
   }
 
-  reset();
+  // reset();
 }
 
 GlobalPositionsHandler::~GlobalPositionsHandler()
@@ -42,22 +42,13 @@ bool GlobalPositionsHandler::getMeasurementTillTime(
     GpMeasurement& extracted_measurement,
     const bool remove_measurements)
 {
-  
-  // debug
-  std::cout << "0\n";
-  // end
-
   ulock_t lock(measurements_mut_);
- 
-  if(measurements_.size() == 0)
+
+  if(measurements_.empty())
   {
     VLOG(10) << "don't have any gp measurements!";
     return false;
   }
-
-  // debug
-  std::cout << "1\n";
-  // end
 
   // Find the first measurement older than timestamp,
   // note that the newest measurement is at the front of the list!
@@ -319,6 +310,7 @@ bool GlobalPositionsHandler::addGpMeasurement(
 {
   ulock_t lock(measurements_mut_);
   measurements_.push_front(m); // new measurement is at the front of the list!
+
   return true;
 }
 

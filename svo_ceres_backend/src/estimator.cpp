@@ -439,9 +439,6 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
         return false;
       }
       speed_and_bias.setZero();
-      // Set initial velocity (FOR SIMULATION ONLY).
-      //speed_and_bias.segment<3>(0) = Eigen::Vector3d(0.0, 3.92, -0.000007);
-      // end
       speed_and_bias.segment<3>(6) = imu_parameters_.at(0).a0;
     }
   }
@@ -497,27 +494,31 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
     }
   }
 
-  // Read last kf id (not considering just added frame) for rts error.
-  const BackendId last_kf_id = currentKeyframeId();
-  // last_kd_id = 0 if frame 0 is a keyframe (could happen in stereo) or
-  // a keyframe has not been selected yet.
   bool no_kf_in_map = false;
-  if(last_kf_id.asInteger()==0)
+  BackendId last_kf_id;
+  if(gp_measurement.timestamp_ > 0.0)
   {
-    if(states_.ids.size()>0)
+    // Read last kf id (not considering just added frame) for rts error.
+    last_kf_id = currentKeyframeId();
+    // last_kd_id = 0 if frame 0 is a keyframe (could happen in stereo) or
+    // a keyframe has not been selected yet.
+    if(last_kf_id.asInteger()==0)
     {
-      if(!states_.is_keyframe[0])
+      if(states_.ids.size()>0)
       {
-        no_kf_in_map = true;
+        if(!states_.is_keyframe[0])
+        {
+          no_kf_in_map = true;
+        }
       }
     }
-  }
 
-  if(!no_kf_in_map)
-  {
-    imu_meas_from_last_kf_.insert(imu_meas_from_last_kf_.begin(),
-                                  imu_measurements.begin(),
-                                  imu_measurements.end());
+    if(!no_kf_in_map)
+    {
+      imu_meas_from_last_kf_.insert(imu_meas_from_last_kf_.begin(),
+                                    imu_measurements.begin(),
+                                    imu_measurements.end());
+    }
   }
 
   // Update states.
@@ -607,16 +608,16 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
               changeIdType(nframe_id, IdType::ImuStates).asInteger()));
     }
 
-    // Rts residual.
-    if(gp_measurement.timestamp_ > 0.0)
+    // Gp residual.
+    if((gp_measurement.timestamp_ > 0.0) && (landmarks_map_.size() > 30))
     {
-      /// @todo RtsError should accept RtsMeasurement
+      /// @todo GpError should accept RtsMeasurement
       /// (currently it only accepts RtsMeasurements)
       GpMeasurements measurement_to_add;
       measurement_to_add.push_back(gp_measurement);
 
       // Residual for previous frame
-      std::shared_ptr<ceres_backend::GpError> rtsError =
+      std::shared_ptr<ceres_backend::GpError> gpError =
               std::make_shared<ceres_backend::GpError>(measurement_to_add,
                                                         gp_parameters_,
                                                         imu_measurements,
@@ -625,7 +626,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
                                                         measurement_to_add.front().timestamp_);
 
       map_ptr_->addResidualBlock(
-                  rtsError,
+                  gpError,
                   nullptr,
                   map_ptr_->parameterBlockPtr(last_nframe_id.asInteger()),
                   map_ptr_->parameterBlockPtr(
@@ -651,7 +652,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
           std::size_t slot_id = states_.findSlot(last_kf_id).first;
           double curr_kf_timestamp = states_.timestamps[slot_id];
 
-          std::shared_ptr<ceres_backend::GpError> rtsError =
+          std::shared_ptr<ceres_backend::GpError> gpError =
                   std::make_shared<ceres_backend::GpError>(measurement_to_add,
                                                             gp_parameters_,
                                                             imu_meas_from_last_kf_,
@@ -660,7 +661,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
                                                             measurement_to_add.front().timestamp_);
 
           map_ptr_->addResidualBlock(
-                      rtsError,
+                      gpError,
                       nullptr,
                       map_ptr_->parameterBlockPtr(last_kf_id.asInteger()),
                       map_ptr_->parameterBlockPtr(
@@ -679,7 +680,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
             std::size_t slot_id = states_.findSlot(last_kf_id).first;
             double curr_kf_timestamp = states_.timestamps[slot_id];
 
-            std::shared_ptr<ceres_backend::GpError> rtsError =
+            std::shared_ptr<ceres_backend::GpError> gpError =
                     std::make_shared<ceres_backend::GpError>(measurement_to_add,
                                                               gp_parameters_,
                                                               imu_meas_from_last_kf_,
@@ -688,7 +689,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
                                                               measurement_to_add.front().timestamp_);
 
             map_ptr_->addResidualBlock(
-                        rtsError,
+                        gpError,
                         nullptr,
                         map_ptr_->parameterBlockPtr(last_kf_id.asInteger()),
                         map_ptr_->parameterBlockPtr(
@@ -1659,9 +1660,9 @@ bool Estimator::initPoseFromFrameBundle(const FrameBundleConstPtr &frame_bundle,
     T_WS.getRotation().normalize();
   }
 
-  VLOG(10) << "Set initial pose in backend from frame bundle.\n";
-  VLOG(10) << "T_W_B_init:" << std::endl << T_WS;
-  VLOG(10) << "q_W_B_init:" << std::endl
+  VLOG(1) << "Set initial pose in backend from frame bundle.\n";
+  VLOG(1) << "T_W_B_init:" << std::endl << T_WS;
+  VLOG(1) << "q_W_B_init:" << std::endl
            << T_WS.getEigenQuaternion().x() << " "
            << T_WS.getEigenQuaternion().y() << " "
            << T_WS.getEigenQuaternion().z() << " "
@@ -1899,7 +1900,6 @@ BackendId Estimator::currentKeyframeId() const
       return states_.ids[i];
     }
   }
-  DEBUG_CHECK(false) << "no existing keyframes ...";
   return BackendId();
 }
 
