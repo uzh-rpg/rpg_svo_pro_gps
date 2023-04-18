@@ -499,6 +499,12 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
 {
   IMUTemporalStatus res = IMUTemporalStatus::kMoving;
 
+  ulock_t lock(measurements_mut_);
+
+  // debug
+  // std::cout << "0\n";
+  // end
+
   if (!options_.temporal_stationary_check)
   {
     CHECK_EQ(temporal_imu_window_.size(), 0u);
@@ -506,21 +512,36 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
     return res;
   }
 
+  // debug
+  // std::cout << "1\n";
+  // end
+
   // do we have the IMU up to this time?
   if (temporal_imu_window_.empty() ||
       temporal_imu_window_.front().timestamp_ < time_sec)
   {
     return IMUTemporalStatus::kUnkown;
   }
+
+  // debug
+  // std::cout << "2\n";
+  // end
+
   // check whether we have enough IMU measurements before
   int start_idx = -1;
   int end_idx = -1;
+
+  // debug
+  // std::cout << "3\n";
+  // end
+
   for (size_t idx = 0; idx < temporal_imu_window_.size(); idx++)
   {
     if (start_idx == -1 &&
         temporal_imu_window_[idx].timestamp_ < time_sec)
     {
       // we know the first is not the start point
+
       CHECK_GT(idx, 0u);
       start_idx = idx - 1;
       continue;
@@ -534,10 +555,21 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
       break;
     }
   }
+
+  // debug
+  // std::cout << "4\n";
+  // end
+
   if (end_idx == -1 || start_idx == -1)
   {
     return IMUTemporalStatus::kUnkown;
   }
+
+  // debug
+  // std::cout << "5\n";
+  // end
+
+
   // check the status by standard deviation
   const double sqrt_dt = std::sqrt(1.0 / imu_calib_.imu_rate);
   std::vector<double> gyr_x (end_idx - start_idx + 1);
@@ -547,6 +579,11 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
   std::vector<double> acc_y (end_idx - start_idx + 1);
   std::vector<double> acc_z (end_idx - start_idx + 1);
   size_t idx = 0;
+
+  // debug
+  // std::cout << "6\n";
+  // end
+
   for (size_t midx = start_idx; midx <= static_cast<size_t>(end_idx);
        midx ++)
   {
@@ -559,6 +596,11 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
     acc_z[idx] = m.linear_acceleration_.z();
     idx++;
   }
+
+  // debug
+  // std::cout << "7\n";
+  // end
+
   std::array<double, 3> gyr_std {0.0, 0.0, 0.0};
   std::array<double, 3> acc_std {0.0, 0.0, 0.0};
   gyr_std[0] = stdVec(gyr_x) * sqrt_dt;
@@ -568,6 +610,9 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
   acc_std[1] = stdVec(acc_y) * sqrt_dt;
   acc_std[2] = stdVec(acc_z) * sqrt_dt;
 
+  // debug
+  // std::cout << "8\n";
+  // end
 
   bool stationary = true;
   for (size_t idx = 0; idx < 3; idx ++)
@@ -576,9 +621,17 @@ IMUTemporalStatus ImuHandler::checkTemporalStatus(const double time_sec)
     stationary &= (acc_std[idx] < options_.stationary_acc_sigma_thresh_);
   }
 
+  // debug
+  // std::cout << "9\n";
+  // end
+
   // remove up to the used ones to make sure we still have enough
   temporal_imu_window_.erase(temporal_imu_window_.begin() + end_idx,
                              temporal_imu_window_.end());
+
+  // debug
+  // std::cout << "10\n";
+  // end
 
   return stationary?
         IMUTemporalStatus::kStationary : IMUTemporalStatus::kMoving;

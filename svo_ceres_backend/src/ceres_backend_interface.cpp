@@ -258,8 +258,8 @@ void CeresBackendInterface::bundleAdjustment(const FrameBundlePtr& frame_bundle)
   // only use imu-based motion detection when the images are not good
   if (!image_motion_detector_stationary_ && imu_motion_detector_stationary_)
   {
-    VLOG(5) << "IMU determined stationary, adding prior at time "
-            << frame_bundle->at(0)->getTimestampSec() << std::endl;
+    SVO_INFO_STREAM("IMU determined stationary, adding zero velocity prior");
+
     if (!backend_.addVelocityPrior(createNFrameId(frame_bundle->getBundleId()),
                                    Eigen::Matrix<FloatType, 3, 1>::Zero(),
                                    0.005))

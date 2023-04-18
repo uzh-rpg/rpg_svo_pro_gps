@@ -76,7 +76,8 @@ Estimator::Estimator(
   : map_ptr_(map_ptr),
     cauchy_loss_function_ptr_(new ceres::CauchyLoss(1)),
     huber_loss_function_ptr_(new ceres::HuberLoss(1)),
-    marginalization_residual_id_(0)
+    marginalization_residual_id_(0),
+    map_initialized_(false)
 {}
 
 // The default constructor.
@@ -407,6 +408,13 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
   Transformation T_WS;
   SpeedAndBias speed_and_bias;
 
+  // check if 3d map has been loaded to backend
+  // gp residuals are added only if map_initialized_ is true
+  if ((!map_initialized_) && (landmarks_map_.size() > 10))
+  {
+    map_initialized_ = true;
+  }
+  
   // initialization or propagate the IMU
   if (states_.ids.empty())
   {
@@ -609,7 +617,7 @@ bool Estimator::addStates(const FrameBundleConstPtr& frame_bundle,
     }
 
     // Gp residual.
-    if((gp_measurement.timestamp_ > 0.0) && (landmarks_map_.size() > 30))
+    if((gp_measurement.timestamp_ > 0.0) && (map_initialized_))
     {
       /// @todo GpError should accept RtsMeasurement
       /// (currently it only accepts RtsMeasurements)

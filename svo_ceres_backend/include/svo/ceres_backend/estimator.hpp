@@ -831,6 +831,9 @@ class Estimator
 
   std::map<uint64_t, int> state_id_to_num_gp_errors_;
   ImuMeasurements imu_meas_from_last_kf_;
+
+  // check if map has been initialized
+  bool map_initialized_;
 };
 
 }  // namespace svo

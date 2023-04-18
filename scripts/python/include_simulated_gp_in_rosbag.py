@@ -24,16 +24,13 @@ if __name__ == "__main__":
 
     gp_measurements = []  # [ts, x, z, y, qx, qy, qz, qw] orientation is used only to initialize the vio
     step = int(args.gt_freq_hz / args.gp_freq_hz)
-    # do not add noise for the first 10 secs to allow initialization
-    ts0_noise = gt[int(args.gt_freq_hz * 10), 0]
     for i in range(0, gt.shape[0], step):
         ts = gt[i, 0]
         p = gt[i, 1:4]
         q = gt[i, 4:]
-        # if ts > ts0_noise:
-        #     p[0] += np.random.normal(0.0, args.gp_std)
-        #     p[1] += np.random.normal(0.0, args.gp_std)
-        #     p[2] += np.random.normal(0.0, args.gp_std)
+        p[0] += np.random.normal(0.0, args.gp_std)
+        p[1] += np.random.normal(0.0, args.gp_std)
+        p[2] += np.random.normal(0.0, args.gp_std)
         gp_measurements.append(np.array([
             ts, p[0], p[1], p[2], q[0], q[1], q[2], q[3]
             ]))
